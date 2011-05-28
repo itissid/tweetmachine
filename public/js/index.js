@@ -1,7 +1,42 @@
-/**This function will initiate a periodic watch
- * for AJAX long polling. Need to move this out.
- * Some defaults are provided
- * */
+(function(){
+    //My Objects: a feed, a topic, a item
+    function feed(dat){
+       // A users name
+       if(!(this instanceof arguments.callee))
+            return new feed(dat)
+       this.dat = dat
+    }
+    function topic(){
+        
+    }
+    var viewModel = {
+        feeds : [],
+        topics: [],
+        items:[],
+        addFeed: function(feed_t){
+            if(feed_t.constructor == feed)
+                this.feed.push(feed_t)
+            else{
+                throw TypeError('Wrong feed type')
+            }
+        }
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function initiatePeriodicalUpdater(config){
 	if(!config.poll_progress_uri){
 		console.log('Cant begin ajax long polling. No URI specified')

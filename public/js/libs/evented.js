@@ -27,6 +27,7 @@
     }
     var evented = {}
     //attributes, text, innerHTML are the essential 
+    //TODO: What about an observable dependent on each other?
     var observable = function(dat){
             //always Return an observable function object
             if(!(this instanceof arguments.callee))
@@ -99,7 +100,7 @@
                     //change the doms inner text
                     /*<span data-bind="text: myMessage"></span>
                      * var viewModel = {
-                     *       myMessage: ko.observable() // Initially blank
+                     *       myMessage: evented.observable() // Initially blank
                      *   };
                      * */
                     var splt = val.split(':');
@@ -121,7 +122,7 @@
                     /**
                      * <div data-bind="html: details"></div>
                         var viewModel = {
-                            details: ko.observable() // Initially blank
+                            details: evented.observable() // Initially blank
                         };
                      * */
                     //change the html inner text
