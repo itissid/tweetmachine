@@ -1,37 +1,66 @@
 (function(){
-    //My Objects: a feed, a topic, a item
+    //My Classes: a feed, a topic, a item
     function feed(dat){
        // A users name
        if(!(this instanceof arguments.callee))
-            return new feed(dat)
+            return new arguments.callee(dat)
        this.dat = dat
+       this.checked = true
     }
-    function topic(){
-        
+    function topic(dat){
+          if(!(this instanceof arguments.callee))
+            return new arguments.callee(dat)
+       this.dat = dat
+       this.checked = true
     }
+    function item(){
+          if(!(this instanceof arguments.callee))
+            return new arguments.callee(dat)
+       this.dat = dat
+       this.checked = true
+    }
+    // A clean model with all the functions to modify the data attributes
     var viewModel = {
         feeds : [],
         topics: [],
-        items:[],
+        items: [], // List of feeds and items,
+        messages: [],//messages coming in
         addFeed: function(feed_t){
-            if(feed_t.constructor == feed)
-                this.feed.push(feed_t)
+            if(feed_t.constructor == feed){
+                if(!util.hasItem(items, feed, 'dat')){
+                    this.feeds.push(feed_t);
+                    this.items.push(feed_t);
+                    //Add to UI
+                }
+            }
             else{
                 throw TypeError('Wrong feed type')
             }
+        },
+        addtopic: function(topic_t){
+            if(topic_t.constructor == topic){
+                if(!util.hasItem(items, topic, 'dat')){
+                    this.topics.push(topic_t);
+                    this.items.push(topic_t)
+                    //Add to UI
+                }
+            }
+            else{
+                throw TypeError('Wrong topic type')
+            }
+        },
+        addMessages: function(message){
+            this.messages.push(message);
+            if(messages.length>20){
+                messages.shift();
+                
+            }
+            //change the UI
         }
     }
+    
+    
 })
-
-
-
-
-
-
-
-
-
-
 
 
 

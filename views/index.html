@@ -10,16 +10,14 @@
 <link rel="stylesheet" href="css/index.css" type="text/css">	
 <script type = "text/javascript" src = "js/libs/evented.js"></script>
 <script type='text/javascript' src="js/libs/jquery-1.4.2.min.js" ></script>
-<script type = 'text/javascript'>
-    $(document).ready(function(){
-       /* window.viewModel  = {
-            url : evented.observable('/twitter/login'),
-            tooltip_t: evented.observable('A tooltip')
-        };
-        evented.applyBindings(viewModel);
-        */
-    })
+
+<script id="feedTemplate" type="text/x-jquery-tmpl">
+    <tr> 
+        <td><input type="checkbox" id = "chckbdy", checked = ${checked}/> </td> 
+        <td>${dat}</td>
+	<tr>
 </script>
+
 <script type='text/javascript' src="js/index.js" ></script>
 <!--[if lt IE 8]><link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
 </head>
@@ -27,7 +25,7 @@
 <div class = "span-28 push-5">
     <!--Row 0-->
     <div class="span-28 last" >
-        <div class="span-14">
+        <div class="span-12">
             <h1 class = "span-11 blue">
                 Tweet Machine
                 <a href="index.html"></a>
@@ -37,7 +35,7 @@
             <div class="span-9 pushdown-1">
                 <input class="span-5" placeholder="Login" type ='text' name="register"> </input>
                 <span class="push">or</span>
-                <a data-bind= "attr: {href: 'url', tooltip: 'tooltip_t'}">Log in via twitter</a>
+                <a href="/twitterlogin">Log in via twitter</a>
             </div>
         </div>
     </div>
@@ -49,11 +47,10 @@
         <!--Row 1-->
     <div class ="span-28 prepend-top">
         <!--Row 1 column 1--->
-        <div class="span-14">
+        <div class="span-12">
         
             <h3 class="loud">Search people or add topics</h3> 
-            <div class="span-14">
-            
+            <div class="span-12">
                 <p class="span-6">
                     <input class="span-6 search" placeholder="#Example" type ='text' name="searchbox"> </input>
                 </p>
@@ -66,10 +63,18 @@
                         </div>
                     </div>
                 </div>
-                
-                
             </div>
-             
+            <!-- Row 2 column 1-->
+            <div class= "span-12"> 
+                <table id="tbl" border="3">
+                    <thead>
+                    <tr class="span-3">
+                        <td class="span-1"><input type="checkbox" id = "chckHead"/> </td>
+                        <td class="span-3"> Topic or Feed</td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
         <!--End of Row 1 column 1--->
         <!--Gutter-->
