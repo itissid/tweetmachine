@@ -65,18 +65,7 @@ app.get('/get', function(req, res){
       
 })
 
-app.get('/connect', function(req, res){
 
-  oauth.consumer().getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret, results){
-    if (error) {
-      res.send("Error getting OAuth request token : " + sys.inspect(error), 500);
-    } else {  
-      req.session.oauthRequestToken = oauthToken;
-      req.session.oauthRequestTokenSecret = oauthTokenSecret;
-      res.redirect("https://twitter.com/oauth/authorize?oauth_token="+req.session.oauthRequestToken);      
-    }
-  });
-});
 
 
 app.get('/lookup_users', function(req,res){
@@ -116,6 +105,8 @@ app.post('/get_tweets', function(req,res){
     var cached_feeds_topics = req.session.cached_feeds_topics
     var time_line_lookup = 'http://api.twitter.com/1/statuses/user_timeline.json'
     //For the user maintain a since ID so that only the latest tweets get returend 
+    if(!req.session.isOauthed)
+         res.redirect('/connect');
     sys.puts("Access Tokens>>"+req.session.oauthAccessToken );
     sys.puts("Access Tokens>>"+req.session.oauthAccessTokenSecret );  
     var wrapper_feeds = function (item){
@@ -163,6 +154,19 @@ app.post('/get_tweets', function(req,res){
     wrapper_feeds(feeds.shift());
 })
 
+/**Oauth specific routers*/
+app.get('/connect', function(req, res){
+
+  oauth.consumer().getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret, results){
+    if (error) {
+      res.send("Error getting OAuth request token : " + sys.inspect(error), 500);
+    } else {  
+      req.session.oauthRequestToken = oauthToken;
+      req.session.oauthRequestTokenSecret = oauthTokenSecret;
+      res.redirect("https://twitter.com/oauth/authorize?oauth_token="+req.session.oauthRequestToken);      
+    }
+  });
+});
 app.get('/tweet_callback', function(req, res){
     sys.puts(">>"+req.session.oauthRequestToken);
     sys.puts(">>"+req.session.oauthRequestTokenSecret);
@@ -178,6 +182,8 @@ app.get('/tweet_callback', function(req, res){
             if (error) {
                 res.send("Error getting twitter screen name : " + sys.inspect(error), 500);
             }else{
+                sys.puts("Authorized. Here is your data"+ sys.inspects(data))
+                req.session.isOauthed = true
                 req.session.twitterScreenName = data["screen_name"];  
                 req.session.cached_feeds_topics = {feed: {}, topics:{}}  
                 res.send('You are signed in: ' + req.session.twitterScreenName)
