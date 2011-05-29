@@ -20,6 +20,29 @@
         else
             return false
     }
+    utils.filter = function(arr, key, value){
+        
+    }
+    utils.remove = function(arr, val, key){
+        var b = []
+        for(var i=0; i<arr.length; i++){
+            if(val && arr && arr[i].hasOwnProperty(key) && val.hasOwnProperty(key)){
+                 if(arr[i][key].toString().toLowerCase() == val[key].toString().toLowerCase()){
+                     b = arr.splice(0,i+1)
+                     break;
+                 }
+            }
+            if(val== arr[i]){
+                b = arr.splice(0,i+1)
+                break;
+            }
+        }
+        b.pop();
+        for(var i=0; i<arr.length; i++){
+             b.push(arr[i]);
+        }
+        return b;
+    }
     //A bind utility with partials
     Function.prototype.bind = function(){
         var fn = this, args = Array.prototype.slice.call(arguments),
@@ -29,5 +52,7 @@
                 args.concat(Array.prototype.slice.call(arguments)));
         };
     };
+    
+    
     window.utils = utils
 })()
