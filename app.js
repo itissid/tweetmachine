@@ -115,7 +115,9 @@ app.post('/get_tweets', function(req,res){
     var tweets = {feeds:[], topics:[]};//keep all the tweets here
     var cached_feeds_topics = req.session.cached_feeds_topics
     var time_line_lookup = 'http://api.twitter.com/1/statuses/user_timeline.json'
-    //For the user maintain a since ID so that only the latest tweets get returend   
+    //For the user maintain a since ID so that only the latest tweets get returend 
+    sys.puts("Access Tokens>>"+req.session.oauthAccessToken );
+    sys.puts("Access Tokens>>"+req.session.oauthAccessTokenSecret );  
     var wrapper_feeds = function (item){
         if(!item)
             return
@@ -164,6 +166,9 @@ app.get('/tweet_callback', function(req, res){
     }else {
         req.session.oauthAccessToken = oauthAccessToken;
         req.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
+        sys.puts(">>"+req.session.oauthAccessToken );
+        sys.puts(">>"+req.session.oauthAccessTokenSecret );
+    
         // Right here is where we would write out some nice user stuff
         oauth.consumer().get("http://twitter.com/account/verify_credentials.json", req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
             if (error) {
