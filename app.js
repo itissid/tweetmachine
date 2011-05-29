@@ -125,7 +125,7 @@ app.post('/get_tweets', function(req,res){
         else
             url = time_line_lookup+'?screen_name='+item.name+'&count=20'
         
-        oauth.consumer.get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
+        oauth.consumer().get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
             if (error) {
                 res.send("Error getting twitter data: " + sys.inspect(error), 500);
             }else{
