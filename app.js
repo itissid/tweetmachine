@@ -158,7 +158,7 @@ app.post('/get_tweets', function(req,res){
 
 /**Oauth specific routers*/
 app.get('/connect', function(req, res){
-
+  sys.puts('In Connect.')
   oauth.consumer().getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret, results){
     if (error) {
       res.send("Error getting OAuth request token : " + sys.inspect(error), 500);
