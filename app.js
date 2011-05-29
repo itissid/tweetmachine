@@ -78,6 +78,81 @@ app.get('/connect', function(req, res){
   });
 });
 
+
+app.get('/lookup_users', function(req,res){
+    //Lookup users 
+    var lookup_url = 'http://api.twitter.com/1/users/lookup.json'
+    
+})
+/* Session variable
+ * cached_feeds_topics= {
+            feed:{
+                <name1>: <since_id> //A feeds since ID
+                <name2>: <since_id> 
+            },
+            topics:{
+                <topic1>: since_id1
+            }
+   }
+   return the tweets and topics in the following way:
+   {
+      feeds:[
+        {
+         name: <name>,
+         tweet: text
+         },
+         {
+         name: <name>,
+         tweet: text
+         },
+      ],
+      topics:[]
+    }
+ * */
+app.post('/get_tweets', function(req,res){
+    var feeds = req.body.feeds;
+    var topics = req.body.topics;
+    var tweets = {feeds:[], topics:[]};//keep all the tweets here
+    var cached_feeds_topics = req.session.cached_feeds_topics
+    var time_line_lookup = 'http://api.twitter.com/1/statuses/user_timeline.json'
+    //For the user maintain a since ID so that only the latest tweets get returend   
+    var wrapper_feeds = function (item){
+        if(!item)
+            return
+        var url = ''
+        if(cached_feeds_topics.feed[item.name])
+            url = time_line_lookup+'?screen_name='+item.name+'&since_id='+cached_feeds_topics.feed[item.name]+'&count=20'
+        else
+            url = time_line_lookup+'?screen_name='+item.name+'&count=20'
+        
+        oauth.consumer.get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
+            if (error) {
+                res.send("Error getting twitter data: " + sys.inspect(error), 500);
+            }else{
+                var max_id = cached_feeds_topics.feed[item.name]||-1
+                for(t in data){
+                    if(data.hasOwnProperty(t)){
+                        if(t.id > max_id)
+                            max_id = t.id
+                        tweets.feeds.push({
+                            name: item.name,
+                            tweet: t.text,
+                        })
+                    }
+                }
+                cached_feeds_topics.feed[item.name] = max_id;
+                wrapper_feeds(feeds.shift());
+                res.contentType('application/json');
+                res.end(JSON.stringify(tweets));
+                //req.session.twitterScreenName = data["screen_name"];    
+                //res.send('You are signed in: ' + req.session.twitterScreenName)
+                //Redirect to index.js from here
+            }  
+        })
+    }   
+    wrapper_feeds(feeds.shift());
+})
+
 app.get('/tweet_callback', function(req, res){
     sys.puts(">>"+req.session.oauthRequestToken);
     sys.puts(">>"+req.session.oauthRequestTokenSecret);
@@ -93,9 +168,10 @@ app.get('/tweet_callback', function(req, res){
             if (error) {
                 res.send("Error getting twitter screen name : " + sys.inspect(error), 500);
             }else{
-                req.session.twitterScreenName = data["screen_name"];    
+                req.session.twitterScreenName = data["screen_name"];  
+                req.session.cached_feeds_topics = {feed: {}, topics:{}}  
                 res.send('You are signed in: ' + req.session.twitterScreenName)
-                
+                //Redirect to index.js from here
             }  
         });  
     }
