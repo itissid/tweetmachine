@@ -102,8 +102,11 @@ $(document).ready(function(){
     $.ajax({
        type: "POST",
        url: "/get_tweets",
+       contentType: "application/json; charset=utf-8", 
+       processData: false,
+       dataTypeString: 'json',
        //TO DO : Filter the checked ones only...
-       data: "feeds="+JSON.stringify(viewModel.feeds)+"&topics="+JSON.stringify(viewModel.topics),
+       data: JSON.stringify({feeds:viewModel.feeds, topics: viewModel.topics}),
        success: function(msg){
          alert( "Data Saved: " + msg );
        },
