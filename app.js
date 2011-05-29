@@ -127,6 +127,7 @@ app.post('/get_tweets', function(req,res){
         
         oauth.consumer().get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
             if (error) {
+                sys.puts(sys.inspect(error));
                 res.send("Error getting twitter data: " + sys.inspect(error), 500);
             }else{
                 var max_id = cached_feeds_topics.feed[item.name]||-1
