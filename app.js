@@ -129,8 +129,15 @@ app.post('/get_tweets', function(req,res){
         
         oauth.consumer().get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
             if (error) {
+                //There may be many reasons for error how to handle them?
                 sys.puts(sys.inspect(error));
-                res.send("Error getting twitter data: " + sys.inspect(error), 500);
+                //res.send("Error getting twitter data: " + sys.inspect(error), 500);
+                tweets.feeds.push({
+                    name: item.name,
+                    tweet: t.text,
+                    statusCode:error.statusCode,
+                    reason: error.data.error,
+                })
             }else{
                 var max_id = cached_feeds_topics.feed[item.name]||-1
                 for(t in data){
@@ -166,9 +173,6 @@ app.get('/tweet_callback', function(req, res){
     }else {
         req.session.oauthAccessToken = oauthAccessToken;
         req.session.oauthAccessTokenSecret = oauthAccessTokenSecret;
-        sys.puts(">>"+req.session.oauthAccessToken );
-        sys.puts(">>"+req.session.oauthAccessTokenSecret );
-    
         // Right here is where we would write out some nice user stuff
         oauth.consumer().get("http://twitter.com/account/verify_credentials.json", req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
             if (error) {
