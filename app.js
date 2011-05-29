@@ -184,7 +184,7 @@ app.get('/tweet_callback', function(req, res){
             if (error) {
                 res.send("Error getting twitter screen name : " + sys.inspect(error), 500);
             }else{
-                sys.puts("Authorized. Here is your data"+ sys.inspects(data))
+                sys.puts("Authorized. Here is your data"+ sys.inspect(data))
                 req.session.isOauthed = true
                 req.session.twitterScreenName = data["screen_name"];  
                 req.session.cached_feeds_topics = {feed: {}, topics:{}}  
