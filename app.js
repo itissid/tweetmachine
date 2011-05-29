@@ -141,8 +141,10 @@ app.post('/get_tweets', function(req,res){
                             name: item.name,
                             tweet: t.text,
                         })
+                        
                     }
                 }
+                sys.puts(sys.inspect(tweets));
                 cached_feeds_topics.feed[item.name] = max_id;
                 wrapper_feeds(feeds.shift());
                 res.contentType('application/json');
