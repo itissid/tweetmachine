@@ -105,8 +105,10 @@ app.post('/get_tweets', function(req,res){
     var cached_feeds_topics = req.session.cached_feeds_topics
     var time_line_lookup = 'http://api.twitter.com/1/statuses/user_timeline.json'
     //For the user maintain a since ID so that only the latest tweets get returend 
-    if(!req.session.isOauthed)
+    if(!req.session.isOauthed){
          res.redirect('/connect');
+         return
+     }
     sys.puts("Access Tokens>>"+req.session.oauthAccessToken );
     sys.puts("Access Tokens>>"+req.session.oauthAccessTokenSecret );  
     var wrapper_feeds = function (item){
@@ -198,23 +200,3 @@ app.get('/tweet_callback', function(req, res){
 
 app.listen(3000);
 console.log("Express server listening on port %d", app.address().port);
-
-
-/**Stub data by sending a JSON..**/
-function getUserdata(req, res){
-    if(req.session && req.session.uid && isAuth(req.session.uid)){
-        //Load data from mongoDB for the authed user
-    }else{
-        //Probably an initial request just send some dummy data 
-        res.send({
-            topics: ['#libya', '#Pakistan','#Obama'],
-            feeds: ['@BarackObama','@MrSarkozy', '@charliesheen'  ]
-        })
-    }
-}
-function isAuth(userID){
-    return false;
-}
-function saveUser(userName){
-    //MongoDB handler to save a userName if not already present
-}
