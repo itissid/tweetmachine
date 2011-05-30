@@ -166,7 +166,9 @@ app.get('/get_data', function(req,res){
     msg.data = data
     res.end(JSON.stringify(msg));    
 })
-
+app.post('/get_topic_tweets', function(req,res){
+    //get the topics from an oauth module...
+})
 app.post('/get_tweets', function(req,res){
    
     //If the user is not oauthed make sure you redirect him to the oauthed page

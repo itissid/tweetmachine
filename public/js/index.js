@@ -30,6 +30,7 @@ function topic(dat){
         items: [], // List of feeds and items,
         messages: [],//messages coming in from twitter
         excluded_feeds:{},//A set of items unchecked and not to be included in the timeline
+        excluded_topics:{},
         addItem: function(item_t){
             if(item_t.constructor == topic){
                 if(!utils.hasItem(this.topics, item_t, 'name')){
@@ -130,15 +131,38 @@ function topic(dat){
                     if(data.message=='ok'){
                         that.update_message(data.data);
                     }else{
-                        alert("Message recieved from server: "+data.data)
+                        //alert("Message recieved from server: "+data.data)
                         console.log("Message recieved from server: "+data.data)
                     }
                 }, 
                 error: function (request, status, error) {
                     console.log("Error recieved from server: "+error) 
-                    alert("Error recieved from server: "+error)
+                    //alert("Error recieved from server: "+error)
                 }
             });
+        },
+        uncheck: function(ref){
+            var t = $(ref).closest('tr').attr('type');
+            if(t=='feed'){
+                var name = $(ref).closest('tr').attr('name')
+                if(!$(ref).attr('checked'))
+                    this.excluded_feeds[name] = 1
+                else
+                    delete  this.excluded_feeds[name]
+            }else{
+                var name  = $(ref).closest('tr').attr('name')
+                if(!$(ref).attr('checked'))
+                    this.excluded_feeds[name] = 1
+                else
+                    delete  this.excluded_feeds[name]
+            }
+        },
+        uncheckAll: function(ref){
+            var that = this;
+            if(!$(ref).attr('checked'))
+                $("input[type='checkbox'][name='chckbdy']").each(function(obj){$(this).attr('checked', false); that.uncheck(this)})
+            else
+                $("input[type=checkbox][name='chckbdy']").each(function(obj){$(this).attr('checked', true); that.uncheck(this)})
         }
     }
     window.viewModel = viewModel;
@@ -158,7 +182,7 @@ $(document).ready(function(){
             }
         }
     });
-    stubData();
+    //stubData();
     //Initiate AJAX Long polling to fetch tweets
     tweet_timer.get_data();
     
@@ -183,25 +207,26 @@ window.tweet_timer = {
                 if(data.message=='ok'){
                     that.update_message(data.data);
                 }else{
-                    alert("Message recieved from server: "+data.data)
+                    //alert("Message recieved from server: "+data.data)
                     console.log("Message recieved from server: "+data.data)
                     //TODO: Deal with messages accordingly 
                     //Redirect message 
                     if(data.message=='redirect'){
                         window.location = data.location
                     }else{
-                        setTimeout(callee, 11000*(viewModel.feeds.length+1));
+                        setTimeout(callee, 1000*(viewModel.feeds.length+1));
                     }
                 }
             }, 
             error: function (request, status, error) {
                 console.log("Error recieved from server: "+error) 
-                alert("Error recieved from server: "+error)
+                //alert("Error recieved from server: "+error)
             }
         });
     },
     get_data: function(){
         //get the users data from the server
+        var that = this
         server_calls.do_json_get({
             url: "/get_data",
             success: function(data){
@@ -210,9 +235,9 @@ window.tweet_timer = {
                     var topics = data.data.topics;
                     feeds.forEach(function(feed_t){ viewModel.addItem(new feed(feed_t))})
                     topics.forEach(function(topic_t){ viewModel.addItem(new topic(topic_t))})
-                    this.start();//start off
+                    that.start();//start off
                 }else{
-                    alert("Message recieved from server: "+data.data)
+                    //alert("Message recieved from server: "+data.data)
                     console.log("Message recieved from server: "+data.data)
                     if(data.message=='redirect'){
                         window.location = data.location
@@ -235,7 +260,7 @@ window.tweet_timer = {
                 if(data.message=='ok'){
                     console.log("Message recieved from server: "+data.data)
                 }else{
-                    alert("Message recieved from server: "+data.data)
+                    //alert("Message recieved from server: "+data.data)
                     console.log("Message recieved from server: "+data.data)
                     //TODO: Deal with messages accordingly 
                     //Redirect message 
@@ -246,7 +271,7 @@ window.tweet_timer = {
             }, 
             error: function (request, status, error) {
                 console.log("Error recieved from server: "+error) 
-                alert("Error recieved from server: "+error)
+                //alert("Error recieved from server: "+error)
             }
         })
         

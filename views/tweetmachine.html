@@ -13,7 +13,8 @@
 <script type='text/javascript' src="js/libs/utils.js" ></script>
 <script id="feedTemplate" type="text/x-jquery-tmpl">
     <tr name=${name} type=${type} class="span-6"> 
-            <td class="span-1"><input type = "checkbox" id = "chckbdy", checked = ${checked}/> </td> 
+            <td class="span-1"><input type = "checkbox" name = "chckbdy", checked = ${checked}, onchange="javascript:viewModel.uncheck(this);"/> 
+            </td> 
         {{if type == 'feed'}}
             <td class="span-4">@${name}</td>
         {{else}}
@@ -47,7 +48,7 @@
         </div>
         <div class="span-12">
             <div class="span-9 pushdown-1">
-                <a href="/logout">Log out</a>
+                <a href="/logout" style="text-decoration:none;">Log out</a>
             </div>
         </div>
     </div>
@@ -84,7 +85,7 @@
                     </colgroup>
                     <thead>
                     <tr class="span-6">
-                        <th class="span-1"><input type="checkbox" id = "chckHead"/> </th>
+                        <th class="span-1"><input type="checkbox" checked= "true" id = "chckHead" onchange="javascript:viewModel.uncheckAll(this);" /> </th>
                         <th class="span-4"> Topic or Feed</th>
                         <th class="span-1"> Remove</th>
                     </tr>

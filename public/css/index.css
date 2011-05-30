@@ -7,7 +7,7 @@
 .sepvert {background-image:url('images/gradient2.jpg'); width:2px ;height:200px;}
 .pinfo{font-size:1.2em;line-height:1.25;margin-bottom:0.25em; margin-top:1.5em;}
 .container-logo{ background-image:url('images/gradient.jpg'); background-repeat:repeat-x; height:108px;}
-
+li:nth-child(even), li.even {background:#e5ecf9;}
 /*Button experiments*/
 /*Wrap element is used for dynamic buttons like progress bar on click*/
 .button-wrap{
