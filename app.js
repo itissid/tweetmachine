@@ -94,16 +94,8 @@ app.get('/lookup_users', function(req,res){
     
 })
 
-app.post('/remove_items', function(req,res){
+app.post('/remove_items', OauthVerify, function(req,res){
     //Remove tweets for a user
-    if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
-            || !temp_db[req.session.twitterScreenName]){
-         res.contentType('application/json');
-         var msg = messages.redirect_message;
-         msg.location = '/connect'
-         res.end(JSON.stringify(msg));
-         return
-    }
     var user_feeds_topics = temp_db[req.session.twitterScreenName]
     var feed = req.body.feed;
     if(feed){
@@ -126,7 +118,7 @@ app.post('/remove_items', function(req,res){
         })
     }
 });
-app.post('/add_item', function(req,res){
+app.post('/add_item', OauthVerify, function(req,res){
     //Add a user to the data base immediately
      if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
             || !temp_db[req.session.twitterScreenName]){
@@ -148,17 +140,9 @@ app.post('/add_item', function(req,res){
     msg.data = 'Added Items'
     res.end(JSON.stringify(msg)); 
 })
-app.get('/get_data', function(req,res){
+app.get('/get_data', OauthVerify, function(req,res){
    
     //If the user is not oauthed make sure you redirect him to the oauthed page
-    if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
-            || !temp_db[req.session.twitterScreenName]){
-         res.contentType('application/json');
-         var msg = messages.redirect_message;
-         msg.location = '/connect'
-         res.end(JSON.stringify(msg));
-         return
-    }
     var user_feeds_topics = temp_db[req.session.twitterScreenName]
     var data ={'feeds': utils.keys(user_feeds_topics.feeds), 'topics':  utils.keys(user_feeds_topics.topics)}
     res.contentType('application/json');
@@ -166,20 +150,15 @@ app.get('/get_data', function(req,res){
     msg.data = data
     res.end(JSON.stringify(msg));    
 })
-app.post('/get_topic_tweets', function(req,res){
-    //get the topics from an oauth module...
+app.post('/get_topic_tweets', OauthVerify, function(req,res){
+    //get the topics from an oauth module... Try out the streaming API
+    
+    var feeds = req.body.feeds;
+    var topics = req.body.topics;
 })
-app.post('/get_tweets', function(req,res){
+app.post('/get_tweets', OauthVerify,  function(req,res){
    
-    //If the user is not oauthed make sure you redirect him to the oauthed page
-    if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
-            || !temp_db[req.session.twitterScreenName]){
-         res.contentType('application/json');
-         var msg = messages.redirect_message;
-         msg.location = '/connect'
-         res.end(JSON.stringify(msg));
-         return
-    }
+  
     //At this point the user is Oauthed and we can send him the data
     var feeds = req.body.feeds;
     var topics = req.body.topics;
@@ -271,7 +250,22 @@ app.get('/logout', function(req,res){
     req.session.oauthAccessTokenSecret = null
     res.redirect('/')
 })
-/**Oauth specific routers*/
+
+
+/**Oauth specific routers and middle ware*/
+function OauthVerify(req,res,next){
+    if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
+            || !temp_db[req.session.twitterScreenName]){
+         res.contentType('application/json');
+         var msg = messages.redirect_message;
+         msg.location = '/connect'
+         res.end(JSON.stringify(msg));
+         
+    }else{
+        next()
+    }
+}
+
 app.get('/connect', function(req, res){
   sys.puts('In Connect.')
   oauth.consumer().getOAuthRequestToken(function(error, oauthToken, oauthTokenSecret, results){

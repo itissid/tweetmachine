@@ -106,7 +106,7 @@ function topic(dat){
             }
             
             $('#livestream').empty();
-            $('#livestream_template').tmpl(this.messages).appendTo('#livestream');
+            $('#livestream_template').tmpl(this.messages).prependTo('#livestream');
             
         },
         removeItems: function(ref){
@@ -192,8 +192,8 @@ $(document).ready(function(){
 
 
 /**
- * Main module for handling the tweets by doing AJAX long polling  and some
- * function to exchange data with the server
+ * Main module for handling the tweets by doing AJAX long polling. This
+ * will handle the XHR requests to the server in a self contained timer and update the UI
  * */
 window.tweet_timer = {
     
@@ -255,13 +255,13 @@ window.tweet_timer = {
             //Initiate the scroll.
             var idx = chosen_idx.slice(0,topk);
             idx.forEach(function(i){
-                $('#livestream_template').tmpl(msg[i]).appendTo('#livestream')
+                $('#livestream_template').tmpl(msg[i]).prependTo('#livestream')
             })
             var last = chosen_idx.shift();
             (function(){
                 if(chosen_idx.length>topk){
-                   $('#livestream>li:first').remove()
-                   $('#livestream_template').tmpl(msg[chosen_idx[topk-1]]).appendTo('#livestream')
+                   $('#livestream>li:last').remove()
+                   $('#livestream_template').tmpl(msg[chosen_idx[topk-1]]).prependTo('#livestream')
                    //Remove the first from the chosen stack
                    last = chosen_idx.shift();
                    setTimeout(arguments.callee, 3000)
@@ -275,7 +275,7 @@ window.tweet_timer = {
            //remove the last elements from the model.
         }else{
             chosen_idx.forEach(function(i){
-                $('#livestream_template').tmpl(msg[i]).appendTo('#livestream')
+                $('#livestream_template').tmpl(msg[i]).prependTo('#livestream')
             })
              setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
         }
