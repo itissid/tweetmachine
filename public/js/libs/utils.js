@@ -23,25 +23,30 @@
     utils.filter = function(arr, key, value){
         
     }
+    //Remove elements from an array on objects based on a non null key
+    //The algorithm returns a new array
     utils.remove = function(arr, val, key){
         var b = []
-        for(var i=0; i<arr.length; i++){
-            if(val && arr && arr[i].hasOwnProperty(key) && val.hasOwnProperty(key)){
-                 if(arr[i][key].toString().toLowerCase() == val[key].toString().toLowerCase()){
-                     b = arr.splice(0,i+1)
-                     break;
+        for(var i=0; arr && i<arr.length; i++){
+            if(val && arr[i].hasOwnProperty(key) && val.hasOwnProperty(key)){
+                 if(arr[i][key].toString().toLowerCase() != val[key].toString().toLowerCase()){
+                     //b = arr.splice(0,i+1)
+                     b.push(arr[i])
+                     
                  }
             }
-            if(val== arr[i]){
-                b = arr.splice(0,i+1)
-                break;
-            }
-        }
-        b.pop();
-        for(var i=0; i<arr.length; i++){
-             b.push(arr[i]);
         }
         return b;
+        
+    }
+    utils.keys = function(obj){
+        var arr  = [];
+        for(j in obj){
+            if(obj.hasOwnProperty(j)){
+                arr.push(j);
+            }
+        }
+        return arr
     }
     //A bind utility with partials
     Function.prototype.bind = function(){

@@ -1,0 +1,120 @@
+<!--
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tweet Machine</title>
+<link rel="stylesheet" href="css/blueprint/screen.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="css/blueprint/print.css" type="text/css" media="print">	
+<link rel="stylesheet" href="css/index.css" type="text/css">	
+<script type='text/javascript' src="js/libs/jquery-1.4.2.min.js" ></script>
+<script type='text/javascript' src="js/libs/jquery.tmpl.min.js"></script>
+<script type='text/javascript' src="js/libs/utils.js" ></script>
+<script id="feedTemplate" type="text/x-jquery-tmpl">
+    <tr name=${name} type=${type} class="span-6"> 
+            <td class="span-1"><input type = "checkbox" id = "chckbdy", checked = ${checked}/> </td> 
+        {{if type == 'feed'}}
+            <td class="span-4">@${name}</td>
+        {{else}}
+            <td class="span-4">#${name}</td>
+        {{/if}}
+        <td>
+            <a href="#" class="button negative" onclick="javascript:viewModel.removeItems(this);">
+              <img src="css/blueprint/plugins/buttons/icons/cross.png" alt=""/> 
+            </a>
+        </td>
+	</tr>
+</script>
+
+<script id="livestream_template" type="text/x-jquery-tmpl">
+    <li>${name}: ${tweet} <p> ${time}</p> </li>
+    
+</script>
+
+<script type='text/javascript' src="js/index.js" ></script>
+<!--[if lt IE 8]><link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+</head>
+<body>
+<div class = "span-28 push-5">
+    <!--Row 0-->
+    <div class="span-28 last" >
+        <div class="span-12">
+            <h1 class = "span-11 blue">
+                Tweet Machine
+                <a href="index.html"></a>
+            </h1>
+        </div>
+        <div class="span-12">
+            <div class="span-9 pushdown-1">
+                <a href="/twitterlogin">Log in via twitter</a>
+            </div>
+        </div>
+    </div>
+    <div  class="span-24">
+        <p class="sephor">
+        </p>
+    </div>
+        <!-- The main body-->
+        <!--Row 1-->
+    <div class ="span-28 prepend-top">
+        <!--Row 1 column 1--->
+        <div class="span-12">
+            <div class="span-6">
+            <h3 class="loud">Add people or trends to monitor</h3> 
+            </div>
+            <div class="span-12">
+                <div class="span-6">
+                    <input class="span-6 search" placeholder="#Example" type ='text' id="searchbox"> </input>
+                </div>
+                <div class = "span-2">
+                    <select id="feedortopicselect" >
+                        <option value="people">People</option>
+                        <option value="trends">Trends</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Row 2 column 1-->
+            <div class= "span-12 pushdown-1"> 
+                <table id="feedortopic" class= "span-6">
+                    <colgroup>
+                        <col>
+                        <col id="middle">
+                        <col>
+                    </colgroup>
+                    <thead>
+                    <tr class="span-6">
+                        <th class="span-1"><input type="checkbox" id = "chckHead"/> </th>
+                        <th class="span-4"> Topic or Feed</th>
+                        <th class="span-1"> Remove</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                   
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!--End of Row 1 column 1--->
+        <!--Gutter-->
+        <div class="span-1">
+            <p class="sepvert" >
+            </p>
+        </div>
+        
+        <!--Row 1 column 2--->
+        <div class="span-11">
+            <h3 class="loud">Live Stream</h3> 
+            <ul id = 'livestream'></ul>
+        </div>
+        <!--End of Row 1 column 2--->
+    </div>
+    <!--End of row 1-->
+<!--TODO: Place footer here... -->	
+</div>
+<!--End of main container--->
+
+<div id = "data"></div>
+
+</body>
+</html>
