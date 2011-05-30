@@ -161,7 +161,7 @@ $(document).ready(function(){
     stubData();
     //Initiate AJAX Long polling to fetch tweets
     tweet_timer.get_data();
-    tweet_timer.start();
+    
     
 });
 
@@ -210,6 +210,7 @@ window.tweet_timer = {
                     var topics = data.data.topics;
                     feeds.forEach(function(feed_t){ viewModel.addItem(new feed(feed_t))})
                     topics.forEach(function(topic_t){ viewModel.addItem(new topic(topic_t))})
+                    this.start();//start off
                 }else{
                     alert("Message recieved from server: "+data.data)
                     console.log("Message recieved from server: "+data.data)
