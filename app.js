@@ -126,7 +126,7 @@ app.post('/remove_items', function(req,res){
         })
     }
 });
-app.post('/add_item', function(req.res){
+app.post('/add_item', function(req,res){
     //Add a user to the data base immediately
      if(!req.session.isOauthed || !req.session.oauthAccessToken|| !req.session.oauthAccessTokenSecret 
             || !temp_db[req.session.twitterScreenName]){
@@ -135,8 +135,9 @@ app.post('/add_item', function(req.res){
          msg.location = '/connect'
          res.end(JSON.stringify(msg));
          return
-    }
-       
+    }   
+    var user_feeds_topics = temp_db[req.session.twitterScreenName]
+    
 })
 app.get('/get_data', function(req,res){
    
