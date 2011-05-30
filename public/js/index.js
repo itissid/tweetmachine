@@ -34,16 +34,18 @@ function topic(dat){
             if(item_t.constructor == topic){
                 if(!utils.hasItem(this.topics, item_t, 'name')){
                     this.topics.push(item_t);
-                    this.items.push(item_t)
+                    this.items.push(item_t);
                     //Add to UI typically you want the DOM to subscribe to the changes and change on its own. 
-                    $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody')
+                    $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody');
+                    tweet_timer.add_item(item_t);
                 }
             }else if(item_t.constructor == feed){
                 if(!utils.hasItem(this.feeds, item_t, 'name')){
                     this.feeds.push(item_t);
                     this.items.push(item_t);
                     //Add to UI
-                    $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody')
+                    $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody');
+                    tweet_timer.add_item(item_t);
                 }
             }else{
                 throw TypeError('Wrong topic type')
@@ -165,7 +167,8 @@ $(document).ready(function(){
 
 
 /**
- * Main module for handling the tweets by doing AJAX long polling 
+ * Main module for handling the tweets by doing AJAX long polling  and some
+ * function to exchange data with the server
  * */
 window.tweet_timer = {
     
@@ -206,7 +209,7 @@ window.tweet_timer = {
                     var feeds = data.data.feeds;
                     var topics = data.data.topics;
                     feeds.forEach(function(feed_t){ viewModel.addItem(new feed(feed_t))})
-                    topics.forEach(function(topic_t){ viewModel.addItem(new topic(topics_t))})
+                    topics.forEach(function(topic_t){ viewModel.addItem(new topic(topic_t))})
                 }else{
                     alert("Message recieved from server: "+data.data)
                     console.log("Message recieved from server: "+data.data)
@@ -216,6 +219,36 @@ window.tweet_timer = {
                 }
             } 
         });
+    },
+    add_item: function(item_t){
+        //called from add_item of the view module
+        if(item_t.constructor == topic){
+           var data = {feed:null, topic: item_t}
+        }else if(item_t.constructor == feed){
+           var data = {feed:item_t, topic: null} 
+        }
+        server_calls.do_json_post({
+            url: "/add_item",
+            data: data,
+            success: function(data, status){
+                if(data.message=='ok'){
+                    console.log("Message recieved from server: "+data.data)
+                }else{
+                    alert("Message recieved from server: "+data.data)
+                    console.log("Message recieved from server: "+data.data)
+                    //TODO: Deal with messages accordingly 
+                    //Redirect message 
+                    if(data.message=='redirect'){
+                        window.location = data.location
+                    }
+                }
+            }, 
+            error: function (request, status, error) {
+                console.log("Error recieved from server: "+error) 
+                alert("Error recieved from server: "+error)
+            }
+        })
+        
     },
     update_message: function(data){
          //Update the model
@@ -269,9 +302,8 @@ window.tweet_timer = {
 }
 
 /**
- * Server side module to make ajax calls easier.
+ * Server side module to make ajax calls modular.
  * */
- 
 window.server_calls={
     
     do_json_post: function(obj){

@@ -137,7 +137,16 @@ app.post('/add_item', function(req,res){
          return
     }   
     var user_feeds_topics = temp_db[req.session.twitterScreenName]
-    
+    var feed = req.body.feed
+    var topic = req.body.topic
+    if(feed)
+        user_feeds_topics.feeds[feed.name] = 0
+    if(topic)
+        user_feeds_topics.topics[topic.name] = 0
+    res.contentType('application/json');
+    var msg = messages.ok_message
+    msg.data = 'Added Items'
+    res.end(JSON.stringify(msg)); 
 })
 app.get('/get_data', function(req,res){
    
@@ -254,7 +263,12 @@ app.post('/get_tweets', function(req,res){
     }   
     wrapper_feeds(feeds.shift());
 })
-
+app.get('/logout', function(req,res){
+    req.session.isOauthed = false 
+    req.session.oauthAccessToken= null 
+    req.session.oauthAccessTokenSecret = null
+    res.redirect('/')
+})
 /**Oauth specific routers*/
 app.get('/connect', function(req, res){
   sys.puts('In Connect.')
