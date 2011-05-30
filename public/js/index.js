@@ -31,6 +31,7 @@ function topic(dat){
         messages: [],//messages coming in from twitter
         excluded_feeds:{},//A set of items unchecked and not to be included in the timeline
         excluded_topics:{},
+        topk : 10,
         addItem: function(item_t){
             if(item_t.constructor == topic){
                 if(!utils.hasItem(this.topics, item_t, 'name')){
@@ -38,7 +39,7 @@ function topic(dat){
                     this.items.push(item_t);
                     //Add to UI typically you want the DOM to subscribe to the changes and change on its own. 
                     $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody');
-                    tweet_timer.add_item(item_t);
+                    server_calls.add_item(item_t);
                 }
             }else if(item_t.constructor == feed){
                 if(!utils.hasItem(this.feeds, item_t, 'name')){
@@ -46,7 +47,7 @@ function topic(dat){
                     this.items.push(item_t);
                     //Add to UI
                     $('#feedTemplate').tmpl(item_t).appendTo('#feedortopic tbody');
-                    tweet_timer.add_item(item_t);
+                    server_calls.add_item(item_t);
                 }
             }else{
                 throw TypeError('Wrong topic type')
@@ -72,7 +73,7 @@ function topic(dat){
                             flag = 1
                             break;
                         }else if(feed_date < this.messages[j].time && j==0){
-                            if(this.messages.length<20){
+                            if(this.messages.length<this.topk){
                                 feeds[i].time = new Date(feeds[i].time)
                                 feeds[i].type = 'feed';
                                 this.messages.splice(j,0, feeds[i])
@@ -184,7 +185,7 @@ $(document).ready(function(){
     });
     //stubData();
     //Initiate AJAX Long polling to fetch tweets
-    tweet_timer.get_data();
+    server_calls.get_data();
     
     
 });
@@ -224,58 +225,7 @@ window.tweet_timer = {
             }
         });
     },
-    get_data: function(){
-        //get the users data from the server
-        var that = this
-        server_calls.do_json_get({
-            url: "/get_data",
-            success: function(data){
-                if(data.message=='ok'){
-                    var feeds = data.data.feeds;
-                    var topics = data.data.topics;
-                    feeds.forEach(function(feed_t){ viewModel.addItem(new feed(feed_t))})
-                    topics.forEach(function(topic_t){ viewModel.addItem(new topic(topic_t))})
-                    that.start();//start off
-                }else{
-                    //alert("Message recieved from server: "+data.data)
-                    console.log("Message recieved from server: "+data.data)
-                    if(data.message=='redirect'){
-                        window.location = data.location
-                    }
-                }
-            } 
-        });
-    },
-    add_item: function(item_t){
-        //called from add_item of the view module
-        if(item_t.constructor == topic){
-           var data = {feed:null, topic: item_t}
-        }else if(item_t.constructor == feed){
-           var data = {feed:item_t, topic: null} 
-        }
-        server_calls.do_json_post({
-            url: "/add_item",
-            data: data,
-            success: function(data, status){
-                if(data.message=='ok'){
-                    console.log("Message recieved from server: "+data.data)
-                }else{
-                    //alert("Message recieved from server: "+data.data)
-                    console.log("Message recieved from server: "+data.data)
-                    //TODO: Deal with messages accordingly 
-                    //Redirect message 
-                    if(data.message=='redirect'){
-                        window.location = data.location
-                    }
-                }
-            }, 
-            error: function (request, status, error) {
-                console.log("Error recieved from server: "+error) 
-                //alert("Error recieved from server: "+error)
-            }
-        })
-        
-    },
+    
     update_message: function(data){
          //Update the model
          var feeds = data.feeds
@@ -298,31 +248,38 @@ window.tweet_timer = {
             }
         }
         $('#livestream').empty();
-        if(ct>20){
-            //The total #items minus the items in the excluded list was more than 20.
+        var that = this;
+        var topk = viewModel.topk
+        if(ct>topk){
+            //The total #items minus the items in the excluded list was more than topk.
             //Initiate the scroll.
-            var idx = chosen_idx.slice(0,20);
+            var idx = chosen_idx.slice(0,topk);
             idx.forEach(function(i){
                 $('#livestream_template').tmpl(msg[i]).appendTo('#livestream')
             })
             var last = chosen_idx.shift();
             (function(){
-                if(chosen_idx.length>20){
+                if(chosen_idx.length>topk){
                    $('#livestream>li:first').remove()
-                   $('#livestream_template').tmpl(msg[chosen_idx[19]]).appendTo('#livestream')
-                   //Remove the first
+                   $('#livestream_template').tmpl(msg[chosen_idx[topk-1]]).appendTo('#livestream')
+                   //Remove the first from the chosen stack
                    last = chosen_idx.shift();
                    setTimeout(arguments.callee, 3000)
+                }else{
+                    //Fire this only when all the elements are displayed
+                    msg.splice(0,Number(last)+1);
+                    setTimeout(that.start.bind(that), 5000*(viewModel.feeds.length+1));
                 }
                 
             })()
-            msg.splice(0,last+1);//remove the last elements from the model.
+           //remove the last elements from the model.
         }else{
             chosen_idx.forEach(function(i){
                 $('#livestream_template').tmpl(msg[i]).appendTo('#livestream')
             })
+             setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
         }
-        setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
+       
     }
     
 }
@@ -353,8 +310,61 @@ window.server_calls={
         $.getJSON(obj.url,function(data){
              obj.success(data)
         });
-    }
+    },
+    get_data: function(){
+        //get the users data from the server
+        var that = this
+        this.do_json_get({
+            url: "/get_data",
+            success: function(data){
+                if(data.message=='ok'){
+                    var feeds = data.data.feeds;
+                    var topics = data.data.topics;
+                    feeds.forEach(function(feed_t){ viewModel.addItem(new feed(feed_t))})
+                    topics.forEach(function(topic_t){ viewModel.addItem(new topic(topic_t))})
+                    tweet_timer.start();//start off
+                }else{
+                    //alert("Message recieved from server: "+data.data)
+                    console.log("Message recieved from server: "+data.data)
+                    if(data.message=='redirect'){
+                        window.location = data.location
+                    }
+                }
+            } 
+        });
+    },
     
+    add_item: function(item_t){
+        //called from add_item of the view module
+        
+        if(item_t.constructor == topic){
+           var data = {feed:null, topic: item_t}
+        }else if(item_t.constructor == feed){
+           var data = {feed:item_t, topic: null} 
+        }
+        this.do_json_post({
+            url: "/add_item",
+            data: data,
+            success: function(data, status){
+                if(data.message=='ok'){
+                    console.log("Message recieved from server: "+data)
+                }else{
+                    //alert("Message recieved from server: "+data.data)
+                    console.log("Message recieved from server: "+data)
+                    //TODO: Deal with messages accordingly 
+                    //Redirect message 
+                    if(data.message=='redirect'){
+                        window.location = data.location
+                    }
+                }
+            }, 
+            error: function (request, status, error) {
+                console.log("Error recieved from server: "+error) 
+                //alert("Error recieved from server: "+error)
+            }
+        })
+        
+    },
 }
 
 
