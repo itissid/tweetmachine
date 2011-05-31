@@ -122,6 +122,7 @@
                 else
                     delete  this.excluded_feeds[name]
             }
+            tweet_timer.render_display()
         },
         uncheckAll: function(ref){
             var that = this;
@@ -129,6 +130,7 @@
                 $("input[type='checkbox'][name='chckbdy']").each(function(obj){$(this).attr('checked', false); that.uncheck(this)})
             else
                 $("input[type=checkbox][name='chckbdy']").each(function(obj){$(this).attr('checked', true); that.uncheck(this)})
+            tweet_timer.render_display()
         }
     }
     window.viewModel = viewModel;

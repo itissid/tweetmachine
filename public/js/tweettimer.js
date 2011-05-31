@@ -1,11 +1,13 @@
 
-
 /**
  * Main module for handling the tweets by doing AJAX long polling. This
  * will handle the XHR requests to the server in a self contained timer and update the UI
  * */
-window.tweet_timer = {
+(function(){
     
+var tweet_timer = {
+    timer_id: null,
+    disp_timer_id: null,
     start: function(){
         //Start getting the tweets from the server
         var callee = arguments.callee;
@@ -42,10 +44,18 @@ window.tweet_timer = {
          //splice the feeds from the server together with the those in the viewModel
          viewModel.addMessages(feeds, topics)
          this.display();
+         setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
+    },
+    render_display: function(){
+        if(this.disp_timer_id )
+            clearTimeout(this.disp_timer_id);
+        this.disp_timer_id = setTimeout(this.display, 3000);
     },
     display: function(){
-        //Manage the display from the model
-        //Use the checked/unchecked list to display the feeds
+        //Manage the display of the List from here
+        //Cancel the display rendering if something was already running or was going to run.
+        if(this.disp_timer_id)
+            return
         viewModel.messages =[]
         //Splice the items from each feed by time
        
@@ -105,8 +115,10 @@ window.tweet_timer = {
         }
         $('#livestream').empty();
         $('#livestream_template').tmpl(viewModel.messages ).appendTo('#livestream')
-         setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
+        this.disp_timer_id = null
        
     }
     
 }
+window.tweet_timer =tweet_timer
+})()

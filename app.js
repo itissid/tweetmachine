@@ -91,7 +91,6 @@ app.get('/', function(req, res){
 app.get('/lookup_users', function(req,res){
     //Lookup users 
     var lookup_url = 'http://api.twitter.com/1/users/lookup.json'
-   
     
 })
 
