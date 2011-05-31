@@ -91,6 +91,7 @@ app.get('/', function(req, res){
 app.get('/lookup_users', function(req,res){
     //Lookup users 
     var lookup_url = 'http://api.twitter.com/1/users/lookup.json'
+   
     
 })
 
@@ -150,11 +151,34 @@ app.get('/get_data', OauthVerify, function(req,res){
     msg.data = data
     res.end(JSON.stringify(msg));    
 })
-app.post('/get_topic_tweets', OauthVerify, function(req,res){
+app.get('/get_topic_tweets', OauthVerify, function(req,res){
     //get the topics from an oauth module... Try out the streaming API
     
-    var feeds = req.body.feeds;
-    var topics = req.body.topics;
+    //var feeds = req.body.feeds;
+    //var topics = req.body.topics;
+    var url = 'http://stream.twitter.com/1/statuses/filter.json?delimited=length'
+    //var url = 'http://stream.twitter.com/1/statuses/sample.json?count =10'
+    
+     //(url, oauth_token, oauth_token_secret, post_body, post_content_type, callback)
+    var data = {track:'basketball'};
+    /*oauth.consumer().get(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, function (error, data, response) {
+             if(error) {
+                sys.puts(sys.inspect(error))  
+            }else{
+                sys.puts(sys.inspect(data))
+            }
+    })
+     */
+     oauth.consumer().post(url, req.session.oauthAccessToken, req.session.oauthAccessTokenSecret, data, null, function (error, data, response) {
+            if(error) {
+                sys.puts(sys.inspect(error))  
+            }else{
+                var dat = JSON.parse(data)
+                sys.puts(sys.inspect(data))
+                res.end();
+            }
+    })
+            
 })
 app.post('/get_tweets', OauthVerify,  function(req,res){
    
@@ -200,19 +224,19 @@ app.post('/get_tweets', OauthVerify,  function(req,res){
                 //400 means you return an error message to the server for the others just indicate in the messages that 
                 //you did not get them..
                 sys.puts(sys.inspect(error));
-                if(error){
-                    if(error.statusCode && error.data.error && error.statusCode!=400){
-                        tweets.feeds.push({
-                            name: item.name,
-                            tweet: t.text,
-                            statusCode:error.statusCode,
-                            reason: error.data.error,
-                        });
-                    }else{
-                        //Some error we do not know
-                        sys.puts('>> Error from Oauth request: '+sys.inspect(error))
-                    }
+                
+                if(error.statusCode && error.data.error && error.statusCode!=400){
+                    tweets.feeds.push({
+                        name: item.name,
+                        tweet: t.text,
+                        statusCode:error.statusCode,
+                        reason: error.data.error,
+                    });
+                }else{
+                    //Some error we should handle 
+                    sys.puts('>> Error from Oauth request: '+sys.inspect(error))
                 }
+                
                 wrapper_feeds(feeds.shift());
             }else{
                 var max_id = user_feeds_topics.feeds[item.name]||0

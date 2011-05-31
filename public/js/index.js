@@ -1,11 +1,48 @@
 //My Classes: a feed, a topic and an item(which contains all the feeds and topics)
 function feed(dat){
    // A users name
-   if(!(this instanceof arguments.callee))
+    if(!(this instanceof arguments.callee))
         return new arguments.callee(dat)
-   this.name = dat
-   this.checked = true
-   this.type = 'feed'
+    this.name = dat
+    this.checked = true
+    this.type = 'feed'
+    this.messages = []
+    this.addMessage = function(feed_t){
+        //Class method to add feeds
+        var feed_date = new Date(feed_t.time);
+        var flag = 0;
+        for(var j in this.messages){
+            if(feed_date >= this.messages[j].time && j<this.messages.length-1){
+                //Splice anything that is not older than the oldest
+                feed_t.time = feed_date
+                feed_t.type = 'feed';
+                this.messages.splice(j,0, feed_t);
+                flag = 1
+                break;
+            }else if(feed_date == this.messages[j].time && j==this.messages.length-1){
+                //splice anything that is as old as the oldest
+                feed_t.time = new Date(feed_t.time)
+                feed_t.type = 'feed';
+                this.messages.splice(j,0, feed_t)
+                flag = 1
+                break;
+            }else if(feed_date > this.messages[j].time && j==this.messages.length-1){
+                //splice anything that is the oldee than the oldest only if the array is not full
+                if(this.messages.length < viewModel.topk){
+                    feed_t.time = new Date(feed_t.time)
+                    feed_t.type = 'feed';
+                    this.messages.splice(j,0, feed_t)
+                }
+                flag = 1;//feed message is older than the oldest message
+                break
+            }
+        }
+        if(flag==0){
+         feed_t.time = feed_date
+         feed_t.type = 'feed';
+         this.messages.push(feed_t)
+        }
+    }
 }
 function topic(dat){
       if(!(this instanceof arguments.callee))
@@ -13,6 +50,40 @@ function topic(dat){
    this.name = dat
    this.checked = true
    this.type = 'topic'
+   this.messages = []
+   this.addMessage = function(topic_t){
+        //Class method to add topics
+        var topic_date = new Date(topic_t.time);
+        var flag = 0;
+        for(var j in this.messages){
+            if(topic_date >= this.messages[j].time && j<this.messages.length){
+                topic_t.time = topic_date
+                topic_t.type = 'topic';
+                this.messages.splice(j,0, topic_t);
+                flag = 1
+                break;
+            }else if(topic_date == this.messages[j].time && j==this.messages.length){
+                topic_t.time = new Date(topic_t.time)
+                topic_t.type = 'topic';
+                this.messages.splice(j,0, topic_t)
+                flag = 1
+                break;
+            }else if(topic_date > this.messages[j].time && j==this.messages.length){
+                if(this.messages.length < viewModel.topk){
+                    topic_t.time = new Date(topic_t.time)
+                    topic_t.type = 'topic';
+                    this.messages.splice(j,0, topic_t)
+                }
+                flag = 1;//topic message is older than the oldest message
+                break
+            }
+        }
+        if(flag==0){
+         topic_t.time = topic_date
+         topic_t.type = 'topic';
+         this.messages.push(topic_t)
+        }
+   }
 }
 
 /**
@@ -28,9 +99,9 @@ function topic(dat){
         feeds : [],
         topics: [],
         items: [], // List of feeds and items,
-        messages: [],//messages coming in from twitter
         excluded_feeds:{},//A set of items unchecked and not to be included in the timeline
         excluded_topics:{},
+        messages: [],//The top 20 messages displayed on the UI
         topk : 10,
         addItem: function(item_t){
             if(item_t.constructor == topic){
@@ -54,60 +125,41 @@ function topic(dat){
             }
         },
         addMessages: function(feeds, topics){
+            //TODO: Add the messages to the individual feeds
+            var feedMap = {}
+            var topicMap = {}
+            for(var f in this.feeds){
+                feedMap[this.feeds[f].name] = f
+            }
+            for(var t in this.topics){
+                topicMap[this.topics[t].name] = t
+            }
             for(var i in feeds){
                 var flag = 0;
-                var feed_date = new Date(feeds[i].time);
+                var idx = feedMap[feeds[i].name]
+                //Do an insert if the message in this 
+                if(idx==undefined){
+                    //The user was removed 
+                    continue;
+                }
                 if(feeds[i].statusCode=='200'){
-                    //Put only those messages that are for valid feeds
-                    for(var j in this.messages){
-                        if(feed_date <= this.messages[j].time && j>0){
-                            feeds[i].time = feed_date
-                            feeds[i].type = 'feed';
-                            this.messages.splice(j,0, feeds[i]);
-                            flag = 1
-                            break;
-                        }else if(feed_date == this.messages[j].time && j==0){
-                            feeds[i].time = new Date(feeds[i].time)
-                            feeds[i].type = 'feed';
-                            this.messages.splice(j,0, feeds[i])
-                            flag = 1
-                            break;
-                        }else if(feed_date < this.messages[j].time && j==0){
-                            if(this.messages.length<this.topk){
-                                feeds[i].time = new Date(feeds[i].time)
-                                feeds[i].type = 'feed';
-                                this.messages.splice(j,0, feeds[i])
-                            }
-                            flag = 1;//feed message is older than the oldest message
-                            break
-                        }
-                    }
-                    if(flag==0){
-                     feeds[i].time = feed_date
-                     feeds[i].type = 'feed';
-                     this.messages.push(feeds[i])
-                    }
+                   //add the message to the feed class
+                   this.feeds[idx].addMessage(feeds[i])
                 }
             }
-        },
-        removeMessages: function(ref){
-            //This method is a dependent observable. meaning its execution depends on the 
-            //change in the feeds and topics observables.
-            for(var i=0; i<this.messages.length; i++){
-                var msg  = this.messages[i]
-                if(ref.type == msg.type){
-                    if(ref.name == msg.name){
-                        this.messages.splice(i,1);
-                        i--;
-                    }
-                }else{
-                    console.log('Not same type',ref.type)
+            for(var i in topics){
+                var flag = 0;
+                var idx = topicMap[topics[i].name]
+                //Do an insert if the message in this 
+                if(idx==undefined){
+                    //The user was removed 
+                    continue;
+                }
+                if(topics[i].statusCode=='200'){
+                   //add the message to the topic class
+                   this.topics[idx].addMessage(feeds[i])
                 }
             }
-            
-            $('#livestream').empty();
-            $('#livestream_template').tmpl(this.messages).prependTo('#livestream');
-            
         },
         removeItems: function(ref){
             var t = $(ref).closest('tr').attr('type')
@@ -115,12 +167,10 @@ function topic(dat){
                 var rem  = feed($(ref).closest('tr').attr('name'))
                 this.feeds = utils.remove(this.feeds, rem, 'name');
                 this.items = utils.remove(this.items, rem, 'name');
-                this.removeMessages(rem);
             }else{
                 var rem  = topic($(ref).closest('tr').attr('name'))
                 this.topics = utils.remove(this.topics, rem, 'name');
                 this.items = utils.remove(this.items, rem, 'name')
-                this.removeMessages(rem);
             }
             //Change the UI
             $(ref).closest('tr').remove();
@@ -237,10 +287,66 @@ window.tweet_timer = {
     display: function(){
         //Manage the display from the model
         //Use the checked/unchecked list to display the feeds
-        var msg = viewModel.messages 
-        var ct = 0;
-        var chosen_idx = [];
+        viewModel.messages =[]
+        //Splice the items from each feed by time
        
+        //Cycle through all the feeds and take the message with min time stamp and 
+        //fill the display array
+        var flag = false;
+        var f = viewModel.feeds
+        var t = viewModel.topics
+        var f_min_idx = new Array()
+        var t_min_idx = new Array()
+        for(var i in f) f_min_idx[i]=0; //An index into the messages in each feed
+        for(var i in t) t_min_idx[i]=0; //An index into the messages in each topic
+        while(viewModel.messages.length<20){
+            var max_f_timeline = -Infinity;
+            var max_f_idx = -1;
+            var flag = false
+            for(var i in f){
+                if(f[i].messages.length>0 && f_min_idx[i] < f[i].messages.length){
+                    flag = true;
+                    if(f[i].messages[f_min_idx[i]].time > max_f_timeline){
+                        max_f_timeline = f[i].messages[f_min_idx[i]].time
+                        max_f_idx = i
+                    }
+                }
+                
+            }
+            var max_t_timeline = -Infinity;
+            var max_t_idx = -1;
+            for(var i in t){
+                if(t[i].messages.length>0 && t_min_idx[i] < t[i].messages.length){
+                    flag = true;
+                    if(t[i].messages[t_min_idx[i]].time > max_t_timeline){
+                        max_t_timeline = t[i].messages[t_min_idx[i]].time
+                        max_t_idx = i
+                    }
+                }
+            }
+            
+            if(max_t_timeline> max_f_timeline){
+                var max_overall = t[max_t_idx].messages[t_min_idx[max_t_idx]]
+                t_min_idx[max_t_idx]++;
+                viewModel.messages.push(max_overall)
+            }else if(max_t_timeline< max_f_timeline){
+                var max_overall = f[max_f_idx].messages[f_min_idx[max_f_idx]]
+                f_min_idx[max_f_idx]++;
+                viewModel.messages.push(max_overall)
+            }else if(max_t_timeline== max_f_timeline && max_t_timeline != -Infinity){
+                f_min_idx[max_f_idx]++;
+                t_min_idx[max_t_idx]++;
+                viewModel.messages.push(f[max_f_idx].messages[f_min_idx[max_f_idx]])
+                viewModel.messages.push(t[max_t_idx].messages[t_min_idx[max_t_idx]])
+            }
+            if(flag == false)
+                break
+            //Add an element to msg
+        }
+        $('#livestream').empty();
+        $('#livestream_template').tmpl(viewModel.messages ).appendTo('#livestream')
+         setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
+       /**
         for(i in msg){
             if(!viewModel.excluded_feeds[msg[i].name]){
                 //The element is not unchecked and is not delelted(present in feed map)
@@ -278,7 +384,7 @@ window.tweet_timer = {
                 $('#livestream_template').tmpl(msg[i]).prependTo('#livestream')
             })
              setTimeout(this.start.bind(this), 5000*(viewModel.feeds.length+1));
-        }
+        }*/
        
     }
     
