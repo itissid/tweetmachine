@@ -1,6 +1,7 @@
 var oauth = require('oauth');
 exports.config = {}
 exports.config.oauth = oauth
+// For the moment. I am putting these keys here. Will revoke them afterwards. Its a pretty good example of how NOT to do things.
 exports.config.oauth._twitterConsumerKey = "uW09Ge8SIMoQaY5VVNewcg";
 exports.config.oauth.twitterConsumerSecret = "laEMFHk020elyfUxbPcX3vUH0CZqceXR2gTb9XAHxbY";
 exports.config.oauth.consumer = function() {
